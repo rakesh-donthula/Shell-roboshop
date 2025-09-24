@@ -72,3 +72,6 @@ VALIDATE $? "Copy mongo repo"
 
 dnf install mongodb-mongosh -y &>>$LOG_FILE
 VALIDATE $? "Install MongoDB client"
+
+systemctl restart catalogue
+VALIDATE $? "Restarted catalogue"
