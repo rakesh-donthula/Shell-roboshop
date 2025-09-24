@@ -43,28 +43,32 @@ else
 fi
 
 mkdir -p /app 
+VALIDATE $? "Creating app directory"
 
-curl -o /tmp/catalogue.zip https://roboshop-artifacts.s3.amazonaws.com/catalogue-v3.zip  &>>$LOG_FILE
+curl -o /tmp/catalogue.zip https://roboshop-artifacts.s3.amazonaws.com/catalogue-v3.zip &>>$LOG_FILE
+VALIDATE $? "Downloading catalogue application"
 
 cd /app 
+VALIDATE $? "Changing to app directory"
+
+rm -rf /app/*
+VALIDATE $? "Removing existing code"
 
 unzip /tmp/catalogue.zip &>>$LOG_FILE
+VALIDATE $? "unzip catalogue"
 
-npm install  &>>$LOG_FILE
+npm install &>>$LOG_FILE
+VALIDATE $? "Install dependencies"
 
-cp $SCRIT_DIR/catalogue-service /etc/systemd/system/catalogue.service
+cp $SCRIPT_DIR/catalogue.service /etc/systemd/system/catalogue.service
+VALIDATE $? "Copy systemctl service"
 
-systemctl daemon-reload &>>$LOG_FILE
+systemctl daemon-reload
+systemctl enable catalogue &>>$LOG_FILE
+VALIDATE $? "Enable catalogue"
 
-systemctl enable catalogue  &>>$LOG_FILE
-systemctl start catalogue &>>$LOG_FILE
-
-cp $SCRIT_DIR/mongo.repo /etc/yum.repos.d/mongo.repo
-VALIDATE $? "Adding Mongo repo"
+cp $SCRIPT_DIR/mongo.repo /etc/yum.repos.d/mongo.repo
+VALIDATE $? "Copy mongo repo"
 
 dnf install mongodb-mongosh -y &>>$LOG_FILE
-
-mongosh --host $MONGODB_HOST </app/db/master-data.js &>>$LOG_FILE
-
-systemctl restart catalogue &>>$LOG_FILE
-VALIDATE $? "Catalogue.... $G Restarted $N"
+VALIDATE $? "Install MongoDB client"
