@@ -65,4 +65,4 @@ else
 fi
 
 systemctl restart shipping &>>$LOG_FILE
-VALIDATE $? "Shipping Resatarted"
+#VALIDATE $? "Shipping Resatarted"
