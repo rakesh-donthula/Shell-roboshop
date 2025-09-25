@@ -28,19 +28,3 @@ VALIDATE(){ # functions receive inputs through args just like shell script args
         echo -e "$2 ... $G SUCCESS $N" | tee -a $LOG_FILE
     fi
 }
-
-cp  $SCRIPT_DIR/rabbitmq.repo /etc/yum.repos.d/rabbitmq.repo &>>LOG_FILE
-VALIDATE $? "Adding rabbitmqrepo"
-
-dnf install rabbitmq-server -y &>>LOG_FILE
-
-systemctl enable rabbitmq-server &>>LOG_FILE
-systemctl start rabbitmq-server &>>LOG_FILE
-
-rabbitmqctl add_user roboshop roboshop123 &>>LOG_FILE
-rabbitmqctl set_permissions -p / roboshop ".*" ".*" ".*" &>>LOG_FILE
-
-END_TIME=$(date +%s)
-
-TOTAL_TIME=$(( $END_TIME - $START_TIME))
-echo -e "Script executed in: $Y $TOTAL_TIME Seconds $N"
