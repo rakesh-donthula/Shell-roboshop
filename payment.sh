@@ -9,8 +9,9 @@ N="\e[0m"
 LOGS_FOLDER="/var/log/shell-roboshop"
 SCRIPT_NAME=$( echo $0 | cut -d "." -f1 )
 SCRIPT_DIR=$PWD
-START_TIME=$(date +%s)
+MONGODB_HOST=mongodb.expense.icu
 LOG_FILE="$LOGS_FOLDER/$SCRIPT_NAME.log" # /var/log/shell-script/16-logs.log
+MYSQL_HOST=mysql.expense.icu
 
 mkdir -p $LOGS_FOLDER
 echo "Script started executed at: $(date)" | tee -a $LOG_FILE
@@ -31,25 +32,33 @@ VALIDATE(){ # functions receive inputs through args just like shell script args
 
 dnf install python3 gcc python3-devel -y &>>$LOG_FILE
 
-id roboshop
+id roboshop &>>$LOG_FILE
 if [ $? -ne 0 ]; then
     useradd --system --home /app --shell /sbin/nologin --comment "roboshop system user" roboshop &>>$LOG_FILE
-    VALIDATE $? "Adding user roboshop"
+    VALIDATE $? "Creating system user"
 else
-    echo -e "roboshop user... $Y Already Exists $N"
+    echo -e "User already exist ... $Y SKIPPING $N"
 fi
 
-mkdir /app 
+mkdir -p /app
+VALIDATE $? "Creating app directory"
 
-curl -L -o /tmp/payment.zip https://roboshop-artifacts.s3.amazonaws.com/payment-v3.zip  &>>$LOG_FILE
+curl -o /tmp/payment.zip https://roboshop-artifacts.s3.amazonaws.com/payment-v3.zip &>>$LOG_FILE
+VALIDATE $? "Downloading payment application"
+
 cd /app 
+VALIDATE $? "Changing to app directory"
+
+rm -rf /app/*
+VALIDATE $? "Removing existing code"
+
 unzip /tmp/payment.zip &>>$LOG_FILE
+VALIDATE $? "unzip payment"
 
 pip3 install -r requirements.txt &>>$LOG_FILE
 
-cp $SCRIPT_DIR/payment.service /etc/systemd/system/payment.service &>>$LOG_FILE
-
-systemctl daemon-reload &>>$LOG_FILE
-
+cp $SCRIPT_DIR/payment.service /etc/systemd/system/payment.service
+systemctl daemon-reload
 systemctl enable payment  &>>$LOG_FILE
-systemctl start payment &>>$LOG_FILE
+
+systemctl restart payment

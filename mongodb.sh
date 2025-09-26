@@ -40,7 +40,7 @@ systemctl start mongod
 VALIDATE $? "Start MongoDB"
 
 sed -i 's/127.0.0.1/0.0.0.0/g' /etc/mongod.conf
-VALIDATE $? "Changing the IP to allow all"
+VALIDATE $? "Allowing remote connections to MongoDB"
 
 systemctl restart mongod
-VALIDATE $? "Restarting the Mongod"
+VALIDATE $? "Restarted MongoDB"
